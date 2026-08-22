@@ -66,8 +66,17 @@ PSI-WPF/
 ├─ PSI.sln                 # 解决方案
 └─ PSI/                    # 唯一工程（单项目结构）
    ├─ App.xaml             # 应用入口，指定启动窗口
-   ├─ MainWindow.xaml      # 主窗口：左侧菜单 + 右侧内容区
-   └─ Pages/               # 功能页面
+   ├─ MainWindow.xaml      # 主窗口：左侧菜单 + 右侧内容区（MVVM 绑定驱动）
+   ├─ MVVM/                # 手写 MVVM 基础设施
+   │  ├─ ObservableObject  # INotifyPropertyChanged 封装，属性变化通知
+   │  ├─ RelayCommand      # ICommand 封装，命令绑定
+   │  ├─ ViewModelBase     # 所有 ViewModel 的公共基类
+   │  └─ NavigationService # 全局导航服务
+   ├─ ViewModels/          # 各页面的 ViewModel
+   │  ├─ MainWindowViewModel
+   │  ├─ HomeViewModel
+   │  └─ PlaceholderViewModel
+   └─ Pages/               # 功能页面（纯界面，无逻辑）
       ├─ HomePage          # 首页
       └─ PlaceholderPage   # 占位页（待实现模块的临时入口）
 ```
@@ -76,7 +85,7 @@ PSI-WPF/
 
 - [x] 工程初始化（解决方案 + WPF 工程 + gitignore）
 - [x] 主窗口骨架与页面导航
-- [ ] MVVM 基础设施（ObservableObject / RelayCommand / ViewModelBase / NavigationService）
+- [x] MVVM 基础设施（ObservableObject / RelayCommand / ViewModelBase / NavigationService）
 - [ ] 数据层（实体、DbContext、EF 迁移、种子数据）
 - [ ] 商品模块 CRUD
 - [ ] 供应商 / 客户模块

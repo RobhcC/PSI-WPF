@@ -3,7 +3,8 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="占位页">
     <Grid>
-        <TextBlock x:Name="TitleText" FontSize="22" Foreground="Gray"
+        <!-- 标题从 DataContext（PlaceholderViewModel.Title）绑定而来，页面自身无任何逻辑 -->
+        <TextBlock Text="{Binding Title}" FontSize="22" Foreground="Gray"
                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Grid>
 </Page>

@@ -1,11 +1,13 @@
 ﻿<Window x:Class="PSI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:pages="clr-namespace:PSI.Pages"
+        xmlns:vm="clr-namespace:PSI.ViewModels"
         Title="PSI 进销存管理系统" Height="600" Width="900"
         WindowStartupLocation="CenterScreen">
 
-    <!-- 菜单按钮的公共样式：定义一次，下面 8 个按钮通过 Style 复用（类似网页里的 CSS 类） -->
     <Window.Resources>
+        <!-- 菜单按钮的公共样式：定义一次，下面 8 个按钮通过 Style 复用（类似网页里的 CSS 类） -->
         <Style x:Key="MenuButton" TargetType="Button">
             <Setter Property="Margin" Value="8,4"/>
             <Setter Property="Padding" Value="10,8"/>
@@ -21,6 +23,15 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <!-- DataTemplate：告诉 WPF"这种 ViewModel 用哪个页面显示"。
+             ContentControl 的内容换成哪个 VM，WPF 就按这里的映射自动创建对应页面 -->
+        <DataTemplate DataType="{x:Type vm:HomeViewModel}">
+            <pages:HomePage/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PlaceholderViewModel}">
+            <pages:PlaceholderPage/>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -30,21 +41,23 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- 左侧菜单区（StackPanel = 从上往下依次排列，不带滚动） -->
+        <!-- 左侧菜单区。注意：按钮不再写 Click 事件，改成绑定 ViewModel 里的命令 -->
         <StackPanel Grid.Column="0" Background="#F2F2F2">
             <TextBlock Text="PSI 进销存" FontSize="18" FontWeight="Bold"
                        Foreground="#333333" Margin="14,18,0,14"/>
-            <Button Content="首页" Style="{StaticResource MenuButton}" Click="MenuHome_Click"/>
-            <Button Content="商品管理" Style="{StaticResource MenuButton}" Click="MenuProduct_Click"/>
-            <Button Content="供应商管理" Style="{StaticResource MenuButton}" Click="MenuSupplier_Click"/>
-            <Button Content="客户管理" Style="{StaticResource MenuButton}" Click="MenuCustomer_Click"/>
-            <Button Content="采购入库" Style="{StaticResource MenuButton}" Click="MenuPurchase_Click"/>
-            <Button Content="销售出库" Style="{StaticResource MenuButton}" Click="MenuSale_Click"/>
-            <Button Content="库存查询" Style="{StaticResource MenuButton}" Click="MenuStock_Click"/>
-            <Button Content="月度统计" Style="{StaticResource MenuButton}" Click="MenuReport_Click"/>
+            <Button Content="首页" Style="{StaticResource MenuButton}" Command="{Binding HomeCommand}"/>
+            <Button Content="商品管理" Style="{StaticResource MenuButton}" Command="{Binding ProductCommand}"/>
+            <Button Content="供应商管理" Style="{StaticResource MenuButton}" Command="{Binding SupplierCommand}"/>
+            <Button Content="客户管理" Style="{StaticResource MenuButton}" Command="{Binding CustomerCommand}"/>
+            <Button Content="采购入库" Style="{StaticResource MenuButton}" Command="{Binding PurchaseCommand}"/>
+            <Button Content="销售出库" Style="{StaticResource MenuButton}" Command="{Binding SaleCommand}"/>
+            <Button Content="库存查询" Style="{StaticResource MenuButton}" Command="{Binding StockCommand}"/>
+            <Button Content="月度统计" Style="{StaticResource MenuButton}" Command="{Binding ReportCommand}"/>
         </StackPanel>
 
-        <!-- 右侧内容区：Frame 专门负责显示和切换 Page（页面容器） -->
-        <Frame x:Name="MainFrame" Grid.Column="1" NavigationUIVisibility="Hidden"/>
+        <!-- 右侧内容区：ContentControl 只负责显示绑定给它的 ViewModel，
+             具体用哪个页面渲染由上面的 DataTemplate 决定。
+             旧版 Frame 自带导航状态，和 MVVM 的"状态归 VM 管"相冲，故弃用 -->
+        <ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}"/>
     </Grid>
 </Window>
