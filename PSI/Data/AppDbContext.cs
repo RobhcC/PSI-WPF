@@ -73,6 +73,12 @@ public class AppDbContext : DbContext
             e.HasIndex(o => o.OrderNo).IsUnique(); // 单据编号唯一，防止重复开单
             e.Property(o => o.TotalAmount).HasPrecision(18, 2);
 
+            // 供应商被单据引用后不许删，否则历史采购单会悬空 → Restrict
+            e.HasOne(o => o.Supplier)
+                .WithMany()
+                .HasForeignKey(o => o.SupplierId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // 外键：单据头删了，明细没有存在意义 → 级联删除
             e.HasMany(o => o.Details)
                 .WithOne(d => d.PurchaseOrder)
@@ -100,6 +106,12 @@ public class AppDbContext : DbContext
             e.Property(o => o.OrderNo).IsRequired().HasMaxLength(20);
             e.HasIndex(o => o.OrderNo).IsUnique();
             e.Property(o => o.TotalAmount).HasPrecision(18, 2);
+
+            // 客户被单据引用后不许删，与供应商同理 → Restrict
+            e.HasOne(o => o.Customer)
+                .WithMany()
+                .HasForeignKey(o => o.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             e.HasMany(o => o.Details)
                 .WithOne(d => d.SaleOrder)
