@@ -32,6 +32,12 @@
         <DataTemplate DataType="{x:Type vm:ProductViewModel}">
             <pages:ProductPage/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SupplierViewModel}">
+            <pages:SupplierPage/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CustomerViewModel}">
+            <pages:CustomerPage/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:PlaceholderViewModel}">
             <pages:PlaceholderPage/>
         </DataTemplate>
