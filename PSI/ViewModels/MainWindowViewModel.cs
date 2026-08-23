@@ -30,7 +30,8 @@ public class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel()
     {
         HomeCommand = new RelayCommand(_ => NavigationService.Navigate(new HomeViewModel()));
-        ProductCommand = new RelayCommand(_ => NavigationService.Navigate(new PlaceholderViewModel("商品管理")));
+        // 商品模块已实现，导航到真实的 ProductViewModel
+        ProductCommand = new RelayCommand(_ => NavigationService.Navigate(new ProductViewModel()));
         SupplierCommand = new RelayCommand(_ => NavigationService.Navigate(new PlaceholderViewModel("供应商管理")));
         CustomerCommand = new RelayCommand(_ => NavigationService.Navigate(new PlaceholderViewModel("客户管理")));
         PurchaseCommand = new RelayCommand(_ => NavigationService.Navigate(new PlaceholderViewModel("采购入库单")));

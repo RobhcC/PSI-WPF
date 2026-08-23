@@ -21,7 +21,7 @@
 | 模块 | 说明 | 状态 |
 |---|---|---|
 | 首页 | 欢迎页 | ✅ |
-| 商品管理 | 商品增删改查 | 🚧 |
+| 商品管理 | 商品增删改查 | ✅ |
 | 供应商管理 | 供应商增删改查 | 🚧 |
 | 客户管理 | 客户增删改查 | 🚧 |
 | 采购入库单 | 主从表录入，保存后库存增加 | 🚧 |
@@ -72,12 +72,14 @@ PSI-WPF/
    │  ├─ RelayCommand      # ICommand 封装，命令绑定
    │  ├─ ViewModelBase     # 所有 ViewModel 的公共基类
    │  └─ NavigationService # 全局导航服务
-   ├─ ViewModels/          # 各页面的 ViewModel
-   │  ├─ MainWindowViewModel
-   │  ├─ HomeViewModel
-   │  └─ PlaceholderViewModel
+   ├─ Models/              # EF Core 实体（商品/供应商/客户/采购、销售主从单）
+   ├─ Data/                # AppDbContext（Fluent API 配置 + 种子数据）与设计时工厂
+   ├─ Migrations/          # EF Core 迁移（数据库结构版本历史）
+   ├─ ViewModels/          # 各页面的 ViewModel（含商品列表与编辑弹窗）
+   ├─ Windows/             # 弹窗（商品编辑等）
    └─ Pages/               # 功能页面（纯界面，无逻辑）
       ├─ HomePage          # 首页
+      ├─ ProductPage       # 商品列表页
       └─ PlaceholderPage   # 占位页（待实现模块的临时入口）
 ```
 
@@ -86,8 +88,8 @@ PSI-WPF/
 - [x] 工程初始化（解决方案 + WPF 工程 + gitignore）
 - [x] 主窗口骨架与页面导航
 - [x] MVVM 基础设施（ObservableObject / RelayCommand / ViewModelBase / NavigationService）
-- [ ] 数据层（实体、DbContext、EF 迁移、种子数据）
-- [ ] 商品模块 CRUD
+- [x] 数据层（实体、DbContext、EF 迁移、种子数据）
+- [x] 商品模块 CRUD
 - [ ] 供应商 / 客户模块
 - [ ] 采购入库单 / 销售出库单（库存联动）
 - [ ] 库存查询 + 月度统计
