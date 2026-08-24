@@ -2,18 +2,44 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
-            <TextBlock Text="年份：" VerticalAlignment="Center"/>
-            <ComboBox ItemsSource="{Binding Years}"
-                      SelectedItem="{Binding SelectedYear}" Width="100"/>
-            <Button Content="查询" Command="{Binding QueryCommand}" Width="60" Margin="8,0,0,0"/>
-            <TextBlock Text="全年采购合计：" VerticalAlignment="Center" Margin="24,0,0,0"/>
-            <TextBlock Text="{Binding TotalPurchase, StringFormat={}{0:N2} 元}" FontWeight="Bold" VerticalAlignment="Center"/>
-            <TextBlock Text="全年销售合计：" VerticalAlignment="Center" Margin="16,0,0,0"/>
-            <TextBlock Text="{Binding TotalSale, StringFormat={}{0:N2} 元}" FontWeight="Bold" VerticalAlignment="Center"/>
+        <StackPanel DockPanel.Dock="Top" Margin="8,8,8,0">
+            <!-- 第一行：查询条件 -->
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="年份：" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding Years}"
+                          SelectedItem="{Binding SelectedYear}" Width="100"/>
+                <Button Content="查询" Command="{Binding QueryCommand}" Width="60" Margin="8,0,0,0"/>
+            </StackPanel>
+            <!-- 第二行：全年合计。指标多了一行放不下，拆两行直白 -->
+            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                <TextBlock Text="全年采购合计：" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding TotalPurchase, StringFormat={}{0:N2} 元}" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="全年销售合计：" VerticalAlignment="Center" Margin="24,0,0,0"/>
+                <TextBlock Text="{Binding TotalSale, StringFormat={}{0:N2} 元}" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="全年毛利估算：" VerticalAlignment="Center" Margin="24,0,0,0"/>
+                <TextBlock Text="{Binding TotalProfit, StringFormat={}{0:N2} 元}" FontWeight="Bold" VerticalAlignment="Center"/>
+            </StackPanel>
         </StackPanel>
 
-        <!-- 左右两张汇总表：同一年的采购、销售月度对比 -->
+        <!-- 畅销商品 TOP 5：钉在底部，主区域留给两张月度对比表 -->
+        <StackPanel DockPanel.Dock="Bottom" Margin="8,0,8,8">
+            <TextBlock Text="畅销商品 TOP 5（按销售金额）" FontWeight="Bold" Margin="0,0,0,4"/>
+            <DataGrid ItemsSource="{Binding TopProducts}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserAddRows="False"
+                      GridLinesVisibility="Horizontal"
+                      HeadersVisibility="Column"
+                      Height="150">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="商品名称" Binding="{Binding ProductName}" Width="*"/>
+                    <DataGridTextColumn Header="销量合计" Binding="{Binding Quantity}" Width="120"/>
+                    <DataGridTextColumn Header="金额合计" Binding="{Binding Amount, StringFormat={}{0:N2}}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+
+        <!-- 左右两张汇总表：同一年的采购、销售月度对比，固定 1~12 月 -->
         <Grid Margin="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -47,6 +73,7 @@
                     <DataGridTextColumn Header="销售月份" Binding="{Binding Month, StringFormat={}{0} 月}" Width="*"/>
                     <DataGridTextColumn Header="单据数" Binding="{Binding OrderCount}" Width="80"/>
                     <DataGridTextColumn Header="金额合计" Binding="{Binding Amount, StringFormat={}{0:N2}}" Width="*"/>
+                    <DataGridTextColumn Header="毛利估算" Binding="{Binding Profit, StringFormat={}{0:N2}}" Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
