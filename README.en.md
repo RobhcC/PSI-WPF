@@ -22,7 +22,7 @@ Key point: **zero third-party MVVM frameworks and zero third-party UI libraries*
 
 | Module | Description | Status |
 |---|---|---|
-| Home | Welcome page | ✅ |
+| Home | Business overview dashboard (KPI cards, low-stock alerts, best-sellers) | ✅ |
 | Products | Product CRUD | ✅ |
 | Suppliers | Supplier CRUD | ✅ |
 | Customers | Customer CRUD | ✅ |
@@ -33,20 +33,25 @@ Key point: **zero third-party MVVM frameworks and zero third-party UI libraries*
 
 ## Screenshots
 
-| Product Management | Purchase Orders |
+| Home Dashboard | Product Management |
 |:---:|:---:|
-| ![Products](docs/screenshots/01-product-list.png) | ![Purchase orders](docs/screenshots/02-purchase-orders.png) |
-| List + search + CRUD | Order list (stock updates on save) |
+| ![Home](docs/screenshots/00-home.png) | ![Products](docs/screenshots/01-product-list.png) |
+| 6 KPI cards + low-stock alerts + best-sellers | List + search + CRUD |
 
-| Master-Detail Entry | Sales Orders |
+| Purchase Orders | Master-Detail Entry |
 |:---:|:---:|
-| ![Purchase editor](docs/screenshots/03-purchase-edit-dialog.png) | ![Sales orders](docs/screenshots/04-sale-orders.png) |
-| Order header + detail lines, live totals | Availability check prevents overselling |
+| ![Purchase orders](docs/screenshots/02-purchase-orders.png) | ![Purchase editor](docs/screenshots/03-purchase-edit-dialog.png) |
+| Order list (stock updates on save) | Order header + detail lines, live totals |
 
-| Inventory | Monthly Reporting |
+| Sales Orders | Inventory |
 |:---:|:---:|
-| ![Inventory](docs/screenshots/05-inventory.png) | ![Monthly report](docs/screenshots/06-monthly-report.png) |
-| Stock balance + movement history (linked) | 12-month summary + gross profit + top 5 |
+| ![Sales orders](docs/screenshots/04-sale-orders.png) | ![Inventory](docs/screenshots/05-inventory.png) |
+| Availability check prevents overselling | Stock balance + movement history (linked) |
+
+| Monthly Reporting |
+|:---:|
+| ![Monthly report](docs/screenshots/06-monthly-report.png) |
+| 12-month summary + gross profit + top 5 |
 
 ## Architecture
 

@@ -22,7 +22,7 @@
 
 | 模块 | 说明 | 状态 |
 |---|---|---|
-| 首页 | 欢迎页 | ✅ |
+| 首页 | 经营概况仪表盘（概览卡片、低库存提醒、畅销榜） | ✅ |
 | 商品管理 | 商品增删改查 | ✅ |
 | 供应商管理 | 供应商增删改查 | ✅ |
 | 客户管理 | 客户增删改查 | ✅ |
@@ -33,20 +33,25 @@
 
 ## 界面截图
 
-| 商品管理 | 采购入库单 |
+| 首页经营概况 | 商品管理 |
 |:---:|:---:|
-| ![商品管理](docs/screenshots/01-product-list.png) | ![采购单列表](docs/screenshots/02-purchase-orders.png) |
-| 列表 + 搜索 + 增删改 | 单据列表（保存后自动联动库存） |
+| ![首页](docs/screenshots/00-home.png) | ![商品管理](docs/screenshots/01-product-list.png) |
+| 6 张卡片 + 低库存提醒 + 畅销榜 | 列表 + 搜索 + 增删改 |
 
-| 主从表录入 | 销售出库单 |
+| 采购入库单 | 主从表录入 |
 |:---:|:---:|
-| ![采购单编辑弹窗](docs/screenshots/03-purchase-edit-dialog.png) | ![销售单列表](docs/screenshots/04-sale-orders.png) |
-| 单据头 + 明细行，金额实时重算 | 出库前校验库存余量防超卖 |
+| ![采购单列表](docs/screenshots/02-purchase-orders.png) | ![采购单编辑弹窗](docs/screenshots/03-purchase-edit-dialog.png) |
+| 单据列表（保存后自动联动库存） | 单据头 + 明细行，金额实时重算 |
 
-| 库存查询 | 月度统计 |
+| 销售出库单 | 库存查询 |
 |:---:|:---:|
-| ![库存查询](docs/screenshots/05-inventory.png) | ![月度统计](docs/screenshots/06-monthly-report.png) |
-| 结存列表与变动流水主从联动 | 12 个月汇总 + 毛利估算 + 畅销 TOP 5 |
+| ![销售单列表](docs/screenshots/04-sale-orders.png) | ![库存查询](docs/screenshots/05-inventory.png) |
+| 出库前校验库存余量防超卖 | 结存列表与变动流水主从联动 |
+
+| 月度统计 |
+|:---:|
+| ![月度统计](docs/screenshots/06-monthly-report.png) |
+| 12 个月汇总 + 毛利估算 + 畅销 TOP 5 |
 
 ## 架构设计
 
