@@ -1,5 +1,7 @@
 # PSI 进销存管理系统
 
+[中文](README.md) | [English](README.en.md)
+
 ![.NET](https://img.shields.io/badge/.NET-8.0-blue) ![WPF](https://img.shields.io/badge/UI-WPF-purple) ![EF Core](https://img.shields.io/badge/ORM-EF%20Core%208-green) ![SQL Server](https://img.shields.io/badge/DB-SQL%20Server%20LocalDB-red)
 
 一个使用 WPF + .NET 8 + EF Core 开发的桌面进销存管理系统（Purchase-Sales-Inventory），覆盖 **基础数据 → 采购入库 → 销售出库 → 库存联动 → 月度统计** 的完整业务闭环。
