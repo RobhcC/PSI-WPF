@@ -24,10 +24,10 @@
 | 商品管理 | 商品增删改查 | ✅ |
 | 供应商管理 | 供应商增删改查 | ✅ |
 | 客户管理 | 客户增删改查 | ✅ |
-| 采购入库单 | 主从表录入，保存后库存增加 | 🚧 |
-| 销售出库单 | 主从表录入，保存后库存扣减 | 🚧 |
-| 库存查询 | 按商品查库存、库存变动流水 | 🚧 |
-| 月度统计 | 采购/销售月度汇总 | 🚧 |
+| 采购入库单 | 主从表录入，保存后库存增加 | ✅ |
+| 销售出库单 | 主从表录入，保存后库存扣减（含余量校验） | ✅ |
+| 库存查询 | 按商品查库存、库存变动流水 | ✅ |
+| 月度统计 | 采购/销售月度汇总 | ✅ |
 
 ## 架构设计
 
@@ -54,10 +54,13 @@ Model / EF Core 数据层     ← 实体、DbContext、数据库读写
 ```bash
 git clone https://github.com/RobhcC/PSI-WPF.git
 cd PSI-WPF
+
+# 首次运行需初始化数据库（创建 LocalDB 中的 PSI 库并写入种子数据）
+dotnet tool install --global dotnet-ef --version 8.0.11
+dotnet ef database update --project ./PSI
+
 dotnet run --project ./PSI
 ```
-
-> 数据库接入（EF Core 迁移）完成后，此处将补充建库步骤。
 
 ## 项目结构
 
@@ -72,15 +75,17 @@ PSI-WPF/
    │  ├─ RelayCommand      # ICommand 封装，命令绑定
    │  ├─ ViewModelBase     # 所有 ViewModel 的公共基类
    │  └─ NavigationService # 全局导航服务
-   ├─ Models/              # EF Core 实体（商品/供应商/客户/采购、销售主从单）
+   ├─ Models/              # EF Core 实体（商品/供应商/客户/采购、销售主从单/库存/流水）
    ├─ Data/                # AppDbContext（Fluent API 配置 + 种子数据）与设计时工厂
    ├─ Migrations/          # EF Core 迁移（数据库结构版本历史）
-   ├─ ViewModels/          # 各页面的 ViewModel（含商品列表与编辑弹窗）
-   ├─ Windows/             # 弹窗（商品编辑等）
+   ├─ ViewModels/          # 各页面的 ViewModel（列表、单据编辑、明细行）
+   ├─ Windows/             # 编辑弹窗（商品/供应商/客户/采购单/销售单）
    └─ Pages/               # 功能页面（纯界面，无逻辑）
       ├─ HomePage          # 首页
-      ├─ ProductPage       # 商品列表页
-      └─ PlaceholderPage   # 占位页（待实现模块的临时入口）
+      ├─ ProductPage / SupplierPage / CustomerPage   # 基础数据三模块
+      ├─ PurchasePage / SalePage                     # 单据列表页
+      ├─ StockPage        # 库存结存 + 变动流水（主从联动）
+      └─ ReportPage       # 月度采购/销售汇总
 ```
 
 ## 开发轨迹
@@ -91,7 +96,7 @@ PSI-WPF/
 - [x] 数据层（实体、DbContext、EF 迁移、种子数据）
 - [x] 商品模块 CRUD
 - [x] 供应商 / 客户模块
-- [ ] 采购入库单 / 销售出库单（库存联动）
-- [ ] 库存查询 + 月度统计
+- [x] 采购入库单 / 销售出库单（库存联动）
+- [x] 库存查询 + 月度统计
 
 提交遵循 [Conventional Commits](https://www.conventionalcommits.org/zh-hans/) 规范，每个功能独立成提交，完整开发历史见 [Commits](https://github.com/RobhcC/PSI-WPF/commits/main)。
