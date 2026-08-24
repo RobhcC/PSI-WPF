@@ -23,6 +23,8 @@ public class AppDbContext : DbContext
     public DbSet<PurchaseOrderDetail> PurchaseOrderDetails => Set<PurchaseOrderDetail>();
     public DbSet<SaleOrder> SaleOrders => Set<SaleOrder>();
     public DbSet<SaleOrderDetail> SaleOrderDetails => Set<SaleOrderDetail>();
+    public DbSet<Stock> Stocks => Set<Stock>();
+    public DbSet<StockLog> StockLogs => Set<StockLog>();
 
     /// <summary>告诉 EF 用哪个数据库。这里不用 appsettings.json 之类的配置文件：
     /// 单机桌面应用一个固定连接串，直接常量最直白。</summary>
@@ -127,6 +129,30 @@ public class AppDbContext : DbContext
             e.HasOne(d => d.Product)
                 .WithMany()
                 .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ---------- 库存 ----------
+        modelBuilder.Entity<Stock>(e =>
+        {
+            // 一个商品只允许一行库存：ProductId 唯一索引，防止出现两行互不知晓的库存记录
+            e.HasIndex(s => s.ProductId).IsUnique();
+
+            e.HasOne(s => s.Product)
+                .WithMany()
+                .HasForeignKey(s => s.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ---------- 库存流水（快照式审计记录，只增不改） ----------
+        modelBuilder.Entity<StockLog>(e =>
+        {
+            e.Property(l => l.ChangeType).IsRequired().HasMaxLength(20);
+            e.Property(l => l.OrderNo).HasMaxLength(20);
+
+            e.HasOne(l => l.Product)
+                .WithMany()
+                .HasForeignKey(l => l.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
