@@ -41,6 +41,9 @@
         <DataTemplate DataType="{x:Type vm:PurchaseViewModel}">
             <pages:PurchasePage/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SaleViewModel}">
+            <pages:SalePage/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:PlaceholderViewModel}">
             <pages:PlaceholderPage/>
         </DataTemplate>

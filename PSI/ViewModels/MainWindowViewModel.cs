@@ -35,7 +35,7 @@ public class MainWindowViewModel : ViewModelBase
         SupplierCommand = new RelayCommand(_ => NavigationService.Navigate(new SupplierViewModel()));
         CustomerCommand = new RelayCommand(_ => NavigationService.Navigate(new CustomerViewModel()));
         PurchaseCommand = new RelayCommand(_ => NavigationService.Navigate(new PurchaseViewModel()));
-        SaleCommand = new RelayCommand(_ => NavigationService.Navigate(new PlaceholderViewModel("销售出库单")));
+        SaleCommand = new RelayCommand(_ => NavigationService.Navigate(new SaleViewModel()));
         StockCommand = new RelayCommand(_ => NavigationService.Navigate(new PlaceholderViewModel("库存查询")));
         ReportCommand = new RelayCommand(_ => NavigationService.Navigate(new PlaceholderViewModel("月度统计")));
 
