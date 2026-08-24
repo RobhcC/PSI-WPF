@@ -29,7 +29,24 @@ Key point: **zero third-party MVVM frameworks and zero third-party UI libraries*
 | Purchase orders | Master-detail entry; stock increases on save | ✅ |
 | Sales orders | Master-detail entry; stock decreases on save (with availability check) | ✅ |
 | Inventory | Per-product stock balance + movement history | ✅ |
-| Reporting | Monthly purchase/sales summary | ✅ |
+| Reporting | Monthly purchase/sales summary (fixed 12 months), gross-profit estimate & top-5 products | ✅ |
+
+## Screenshots
+
+| Product Management | Purchase Orders |
+|:---:|:---:|
+| ![Products](docs/screenshots/01-product-list.png) | ![Purchase orders](docs/screenshots/02-purchase-orders.png) |
+| List + search + CRUD | Order list (stock updates on save) |
+
+| Master-Detail Entry | Sales Orders |
+|:---:|:---:|
+| ![Purchase editor](docs/screenshots/03-purchase-edit-dialog.png) | ![Sales orders](docs/screenshots/04-sale-orders.png) |
+| Order header + detail lines, live totals | Availability check prevents overselling |
+
+| Inventory | Monthly Reporting |
+|:---:|:---:|
+| ![Inventory](docs/screenshots/05-inventory.png) | ![Monthly report](docs/screenshots/06-monthly-report.png) |
+| Stock balance + movement history (linked) | 12-month summary + gross profit + top 5 |
 
 ## Architecture
 
@@ -57,7 +74,8 @@ Model / EF Core data layer  ← entities, DbContext, database read/write
 git clone https://github.com/RobhcC/PSI-WPF.git
 cd PSI-WPF
 
-# First run: initialize the database (creates the PSI database in LocalDB with seed data)
+# First run: initialize the database (creates the PSI database in LocalDB with demo data:
+# master data + purchase/sales orders + stock balances and logs, ready to explore out of the box)
 dotnet tool install --global dotnet-ef --version 8.0.11
 dotnet ef database update --project ./PSI
 
@@ -100,5 +118,6 @@ PSI-WPF/
 - [x] Supplier / customer modules
 - [x] Purchase / sales orders (inventory linkage)
 - [x] Inventory query + monthly reporting
+- [x] Demo data expansion (consistent orders/stock/logs in every table) & reporting enhancements (gross-profit estimate, top-5 products)
 
 Commits follow the [Conventional Commits](https://www.conventionalcommits.org/) convention, with each feature in its own commit. Full development history: [Commits](https://github.com/RobhcC/PSI-WPF/commits/main).

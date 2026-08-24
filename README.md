@@ -29,7 +29,24 @@
 | 采购入库单 | 主从表录入，保存后库存增加 | ✅ |
 | 销售出库单 | 主从表录入，保存后库存扣减（含余量校验） | ✅ |
 | 库存查询 | 按商品查库存、库存变动流水 | ✅ |
-| 月度统计 | 采购/销售月度汇总 | ✅ |
+| 月度统计 | 采购/销售月度汇总（固定 12 个月）、毛利估算与畅销商品 TOP 5 | ✅ |
+
+## 界面截图
+
+| 商品管理 | 采购入库单 |
+|:---:|:---:|
+| ![商品管理](docs/screenshots/01-product-list.png) | ![采购单列表](docs/screenshots/02-purchase-orders.png) |
+| 列表 + 搜索 + 增删改 | 单据列表（保存后自动联动库存） |
+
+| 主从表录入 | 销售出库单 |
+|:---:|:---:|
+| ![采购单编辑弹窗](docs/screenshots/03-purchase-edit-dialog.png) | ![销售单列表](docs/screenshots/04-sale-orders.png) |
+| 单据头 + 明细行，金额实时重算 | 出库前校验库存余量防超卖 |
+
+| 库存查询 | 月度统计 |
+|:---:|:---:|
+| ![库存查询](docs/screenshots/05-inventory.png) | ![月度统计](docs/screenshots/06-monthly-report.png) |
+| 结存列表与变动流水主从联动 | 12 个月汇总 + 毛利估算 + 畅销 TOP 5 |
 
 ## 架构设计
 
@@ -57,7 +74,8 @@ Model / EF Core 数据层     ← 实体、DbContext、数据库读写
 git clone https://github.com/RobhcC/PSI-WPF.git
 cd PSI-WPF
 
-# 首次运行需初始化数据库（创建 LocalDB 中的 PSI 库并写入种子数据）
+# 首次运行需初始化数据库（创建 LocalDB 中的 PSI 库并写入演示数据：
+# 基础档案 + 采购/销售单 + 库存结存与流水，开箱即可浏览全部页面）
 dotnet tool install --global dotnet-ef --version 8.0.11
 dotnet ef database update --project ./PSI
 
@@ -100,5 +118,6 @@ PSI-WPF/
 - [x] 供应商 / 客户模块
 - [x] 采购入库单 / 销售出库单（库存联动）
 - [x] 库存查询 + 月度统计
+- [x] 演示数据扩充（各表预置账实一致的单据/库存/流水）与报表增强（毛利估算、畅销商品 TOP 5）
 
 提交遵循 [Conventional Commits](https://www.conventionalcommits.org/zh-hans/) 规范，每个功能独立成提交，完整开发历史见 [Commits](https://github.com/RobhcC/PSI-WPF/commits/main)。
