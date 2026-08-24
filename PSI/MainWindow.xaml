@@ -44,8 +44,11 @@
         <DataTemplate DataType="{x:Type vm:SaleViewModel}">
             <pages:SalePage/>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:PlaceholderViewModel}">
-            <pages:PlaceholderPage/>
+        <DataTemplate DataType="{x:Type vm:StockViewModel}">
+            <pages:StockPage/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ReportViewModel}">
+            <pages:ReportPage/>
         </DataTemplate>
     </Window.Resources>
 

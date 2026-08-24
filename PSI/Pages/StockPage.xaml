@@ -1,0 +1,47 @@
+<UserControl x:Class="PSI.Pages.StockPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
+            <TextBlock Text="商品名称：" VerticalAlignment="Center"/>
+            <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="180"/>
+            <Button Content="查询" Command="{Binding SearchCommand}" Width="60" Margin="8,0,0,0"/>
+        </StackPanel>
+
+        <!-- 上：库存结存（选中一行，下方流水随之刷新） -->
+        <DataGrid DockPanel.Dock="Top" Height="260"
+                  ItemsSource="{Binding Stocks}"
+                  SelectedItem="{Binding SelectedStock}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  Margin="8,0,8,4">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="商品名称" Binding="{Binding Product.Name}" Width="*"/>
+                <DataGridTextColumn Header="分类" Binding="{Binding Product.Category}" Width="100"/>
+                <DataGridTextColumn Header="单位" Binding="{Binding Product.Unit}" Width="60"/>
+                <DataGridTextColumn Header="结存数量" Binding="{Binding Quantity}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- 下：选中商品的变动流水 -->
+        <TextBlock DockPanel.Dock="Top" Text="变动流水（选中商品后显示）"
+                   Margin="8,8,8,4" FontWeight="Bold"/>
+        <DataGrid ItemsSource="{Binding Logs}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  Margin="8,0,8,8">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="时间" Binding="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Width="150"/>
+                <DataGridTextColumn Header="类型" Binding="{Binding ChangeType}" Width="90"/>
+                <DataGridTextColumn Header="数量" Binding="{Binding Quantity}" Width="80"/>
+                <DataGridTextColumn Header="关联单据" Binding="{Binding OrderNo}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

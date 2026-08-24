@@ -36,8 +36,8 @@ public class MainWindowViewModel : ViewModelBase
         CustomerCommand = new RelayCommand(_ => NavigationService.Navigate(new CustomerViewModel()));
         PurchaseCommand = new RelayCommand(_ => NavigationService.Navigate(new PurchaseViewModel()));
         SaleCommand = new RelayCommand(_ => NavigationService.Navigate(new SaleViewModel()));
-        StockCommand = new RelayCommand(_ => NavigationService.Navigate(new PlaceholderViewModel("库存查询")));
-        ReportCommand = new RelayCommand(_ => NavigationService.Navigate(new PlaceholderViewModel("月度统计")));
+        StockCommand = new RelayCommand(_ => NavigationService.Navigate(new StockViewModel()));
+        ReportCommand = new RelayCommand(_ => NavigationService.Navigate(new ReportViewModel()));
 
         // 订阅全局导航：任何地方调 NavigationService.Navigate，主窗口内容区就跟着切换
         NavigationService.Navigated += vm => CurrentViewModel = vm;
