@@ -16,8 +16,6 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="16">
             <TextBlock Text="经营概况" FontSize="20" FontWeight="Bold" Foreground="#333333"/>
-            <TextBlock Text="打开程序第一眼的仪表盘：档案、库存资金与今年单据一眼看全"
-                       FontSize="13" Foreground="Gray" Margin="0,4,0,0"/>
 
             <!-- 第一行卡片：三张基础档案数 + 库存占用资金（结存×采购价） -->
             <UniformGrid Columns="4" Margin="0,14,0,0">
