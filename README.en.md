@@ -18,19 +18,6 @@ Key point: **zero third-party MVVM frameworks and zero third-party UI libraries*
 | MVVM | Hand-written infrastructure | Every line lives in the repo — explainable, modifiable, immune to framework upgrade churn |
 | UI | Native WPF controls | No third-party license issues; every style is under control |
 
-## Feature Modules
-
-| Module | Description | Status |
-|---|---|---|
-| Home | Business overview dashboard (KPI cards, low-stock alerts, best-sellers) | ✅ |
-| Products | Product CRUD | ✅ |
-| Suppliers | Supplier CRUD | ✅ |
-| Customers | Customer CRUD | ✅ |
-| Purchase orders | Master-detail entry; stock increases on save | ✅ |
-| Sales orders | Master-detail entry; stock decreases on save (with availability check) | ✅ |
-| Inventory | Per-product stock balance + movement history | ✅ |
-| Reporting | Monthly purchase/sales summary (fixed 12 months), gross-profit estimate & top-5 products | ✅ |
-
 ## Screenshots
 
 | Home Dashboard | Product Management |
@@ -113,16 +100,3 @@ PSI-WPF/
       └─ ReportPage        # monthly purchase/sales summary
 ```
 
-## Development Timeline
-
-- [x] Project initialization (solution + WPF project + gitignore)
-- [x] Main window shell and page navigation
-- [x] MVVM infrastructure (ObservableObject / RelayCommand / ViewModelBase / NavigationService)
-- [x] Data layer (entities, DbContext, EF migrations, seed data)
-- [x] Product module CRUD
-- [x] Supplier / customer modules
-- [x] Purchase / sales orders (inventory linkage)
-- [x] Inventory query + monthly reporting
-- [x] Demo data expansion (consistent orders/stock/logs in every table) & reporting enhancements (gross-profit estimate, top-5 products)
-
-Commits follow the [Conventional Commits](https://www.conventionalcommits.org/) convention, with each feature in its own commit. Full development history: [Commits](https://github.com/RobhcC/PSI-WPF/commits/main).
