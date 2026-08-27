@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using PSI.Data;
 using PSI.MVVM;
@@ -10,6 +11,9 @@ namespace PSI.ViewModels;
 /// 六张概览卡片（档案数、库存占用资金、今年单据与销售额）+ 两张迷你榜
 /// （低库存预警、畅销商品）。全部用 Count/Sum/GroupBy 在数据库端一次算完，
 /// 首页不做定时刷新——单据页才是干活的地方，首页只给概况。
+/// 加载走后台线程：冷启动时 LocalDB 拉起进程 + EF 编译首个查询实测超过 1 秒，
+/// 若在构造函数里同步查，主窗口要自白等这一秒才显示；改异步后窗口先出来，
+/// 卡片数据到了再填（短暂显示 0 属正常）。
 /// </summary>
 public class HomeViewModel : ViewModelBase
 {
@@ -91,46 +95,80 @@ public class HomeViewModel : ViewModelBase
     {
         StatYear = DateTime.Now.Year;
 
-        using var db = new AppDbContext();
+        _ = LoadAsync();
+    }
 
-        // 三张基础档案只数数量，Count 翻译成 SQL 的 COUNT(*)，不拉数据回来
-        ProductCount = db.Products.Count();
-        SupplierCount = db.Suppliers.Count();
-        CustomerCount = db.Customers.Count();
+    /// <summary>
+    /// 后台线程一次算完所有指标。DbContext 不是线程安全的：全部查询关在 Task.Run 里
+    /// 用局部 db；await 之后回到 UI 线程再赋值属性/填充集合（绑定只认 UI 线程的修改）。
+    /// </summary>
+    private async Task LoadAsync()
+    {
+        var year = StatYear; // 先在 UI 线程取值再进后台，避免后台读绑定属性
 
-        // 库存占用资金 = Σ(结存数量 × 商品采购价)：库存联商品表，数据库端一次聚合算完。
-        // 用采购价是保守口径（还没卖掉的都是成本投入），销售口径要按售价另算
-        StockValue = db.Stocks.Sum(s => s.Quantity * s.Product.PurchasePrice);
-
-        PurchaseOrderCount = db.PurchaseOrders.Count(o => o.OrderDate.Year == StatYear);
-        SaleAmount = db.SaleOrders
-            .Where(o => o.OrderDate.Year == StatYear)
-            .Sum(o => o.TotalAmount);
-
-        // 低库存预警：结存升序取 5 条，提示"该补货了"
-        LowStockItems.Clear();
-        var low = db.Stocks
-            .Include(s => s.Product)
-            .OrderBy(s => s.Quantity)
-            .Take(5)
-            .ToList();
-        foreach (var s in low)
+        try
         {
-            LowStockItems.Add(new LowStockRow { ProductName = s.Product.Name, Quantity = s.Quantity });
+            var result = await Task.Run(() =>
+            {
+                using var db = new AppDbContext();
+
+                // 三张基础档案只数数量，Count 翻译成 SQL 的 COUNT(*)，不拉数据回来
+                var productCount = db.Products.Count();
+                var supplierCount = db.Suppliers.Count();
+                var customerCount = db.Customers.Count();
+
+                // 库存占用资金 = Σ(结存数量 × 商品采购价)：库存联商品表，数据库端一次聚合算完。
+                // 用采购价是保守口径（还没卖掉的都是成本投入），销售口径要按售价另算
+                var stockValue = db.Stocks.Sum(s => s.Quantity * s.Product.PurchasePrice);
+
+                var purchaseOrderCount = db.PurchaseOrders.Count(o => o.OrderDate.Year == year);
+                var saleAmount = db.SaleOrders
+                    .Where(o => o.OrderDate.Year == year)
+                    .Sum(o => o.TotalAmount);
+
+                // 低库存预警：结存升序取 5 条，提示"该补货了"
+                var low = db.Stocks
+                    .Include(s => s.Product)
+                    .OrderBy(s => s.Quantity)
+                    .Take(5)
+                    .Select(s => new LowStockRow { ProductName = s.Product.Name, Quantity = s.Quantity })
+                    .ToList();
+
+                // 畅销榜：按销售金额 GroupBy 取前五，与报表页同一个写法（数据库端 GROUP BY + TOP）
+                var hot = db.SaleOrderDetails
+                    .Where(d => d.SaleOrder.OrderDate.Year == year)
+                    .GroupBy(d => new { d.ProductId, d.Product.Name })
+                    .Select(g => new HotProductRow { ProductName = g.Key.Name, Quantity = g.Sum(x => x.Quantity), Amount = g.Sum(x => x.Amount) })
+                    .OrderByDescending(r => r.Amount)
+                    .Take(5)
+                    .ToList();
+
+                return (productCount, supplierCount, customerCount, stockValue,
+                    purchaseOrderCount, saleAmount, low, hot);
+            });
+
+            ProductCount = result.productCount;
+            SupplierCount = result.supplierCount;
+            CustomerCount = result.customerCount;
+            StockValue = result.stockValue;
+            PurchaseOrderCount = result.purchaseOrderCount;
+            SaleAmount = result.saleAmount;
+
+            LowStockItems.Clear();
+            foreach (var s in result.low)
+            {
+                LowStockItems.Add(s);
+            }
+
+            HotProducts.Clear();
+            foreach (var row in result.hot)
+            {
+                HotProducts.Add(row);
+            }
         }
-
-        // 畅销榜：按销售金额 GroupBy 取前五，与报表页同一个写法（数据库端 GROUP BY + TOP）
-        HotProducts.Clear();
-        var hot = db.SaleOrderDetails
-            .Where(d => d.SaleOrder.OrderDate.Year == StatYear)
-            .GroupBy(d => new { d.ProductId, d.Product.Name })
-            .Select(g => new HotProductRow { ProductName = g.Key.Name, Quantity = g.Sum(x => x.Quantity), Amount = g.Sum(x => x.Amount) })
-            .OrderByDescending(r => r.Amount)
-            .Take(5)
-            .ToList();
-        foreach (var row in hot)
+        catch (Exception ex)
         {
-            HotProducts.Add(row);
+            MessageBox.Show($"首页数据加载失败：{ex.Message}", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 }
