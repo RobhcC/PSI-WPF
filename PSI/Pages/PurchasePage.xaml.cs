@@ -1,4 +1,6 @@
 using System.Windows.Controls;
+using System.Windows.Input;
+using PSI.ViewModels;
 
 namespace PSI.Pages;
 
@@ -8,5 +10,14 @@ public partial class PurchasePage : UserControl
     public PurchasePage()
     {
         InitializeComponent();
+    }
+
+    /// <summary>双击行查看明细：纯 UI 事件转调 VM 命令（与"查看明细"按钮同一入口）。</summary>
+    private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (DataContext is PurchaseViewModel viewModel && viewModel.ViewCommand.CanExecute(null))
+        {
+            viewModel.ViewCommand.Execute(null);
+        }
     }
 }

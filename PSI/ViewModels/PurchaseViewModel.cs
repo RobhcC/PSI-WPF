@@ -27,11 +27,22 @@ public class PurchaseViewModel : ViewModelBase
 
     public RelayCommand SearchCommand { get; }
     public RelayCommand AddCommand { get; }
+    public RelayCommand ViewCommand { get; }
+
+    private PurchaseOrder? _selectedOrder;
+
+    /// <summary>列表当前选中的单据。查看明细命令的可用条件（选中才亮）。</summary>
+    public PurchaseOrder? SelectedOrder
+    {
+        get => _selectedOrder;
+        set => SetProperty(ref _selectedOrder, value);
+    }
 
     public PurchaseViewModel()
     {
         SearchCommand = new RelayCommand(_ => LoadOrders());
         AddCommand = new RelayCommand(_ => AddOrder());
+        ViewCommand = new RelayCommand(_ => ViewOrder(), _ => SelectedOrder != null);
 
         LoadOrders();
     }
@@ -66,5 +77,23 @@ public class PurchaseViewModel : ViewModelBase
         {
             LoadOrders();
         }
+    }
+
+    /// <summary>只读查看选中单据的明细：弹窗显示单头信息 + 明细行，不可编辑。</summary>
+    private void ViewOrder()
+    {
+        if (SelectedOrder == null)
+        {
+            return;
+        }
+
+        var detailVm = new OrderDetailViewModel(SelectedOrder);
+        var window = new OrderDetailWindow
+        {
+            Owner = Application.Current.MainWindow,
+            DataContext = detailVm,
+        };
+
+        window.ShowDialog();
     }
 }
