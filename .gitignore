@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# 本地开发计划，不纳入版本控制
+开发计划.md

@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using PSI.Data;
 using PSI.MVVM;
 using PSI.Models;
@@ -184,33 +186,61 @@ public class PurchaseEditViewModel : ViewModelBase
         }
 
         // ---- 库存联动 + 流水：和单据在同一个 DbContext、同一次 SaveChanges ----
-        foreach (var row in Details)
+        // 先按商品汇总（同一商品可能占多行），再逐商品改库存、写流水，与销售单的 needed 字典同一思路。
+        // 不汇总的漏洞：LINQ 查询只看数据库、看不见本事务里还没落库的新增，
+        // 同一新商品占两行会各自 Add 一条 Stock，撞 ProductId 唯一索引。
+        foreach (var group in Details.GroupBy(row => row.SelectedProduct!.Id))
         {
-            var productId = row.SelectedProduct!.Id;
+            var productId = group.Key;
+            var quantity = group.Sum(row => row.Quantity);
 
             var stock = db.Stocks.FirstOrDefault(s => s.ProductId == productId);
             if (stock == null)
             {
                 // 该商品第一次入库：新建库存行
-                db.Stocks.Add(new Stock { ProductId = productId, Quantity = row.Quantity });
+                db.Stocks.Add(new Stock { ProductId = productId, Quantity = quantity });
             }
             else
             {
-                stock.Quantity += row.Quantity;
+                stock.Quantity += quantity;
             }
 
             db.StockLogs.Add(new StockLog
             {
                 ProductId = productId,
                 ChangeType = "采购入库",
-                Quantity = row.Quantity,
+                Quantity = quantity,
                 OrderNo = order.OrderNo,
                 CreatedAt = DateTime.Now,
             });
         }
 
         db.PurchaseOrders.Add(order);
-        db.SaveChanges(); // 原子提交：单据/明细/库存/流水，四类变更要么全成、要么全无
+        try
+        {
+            db.SaveChanges(); // 原子提交：单据/明细/库存/流水，四类变更要么全成、要么全无
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
+        {
+            // 2601/2627 = 撞唯一索引。单号精确到秒，手工开单几乎撞不上，
+            // 实际触发场景是双击保存按钮——第二次 Save 生成的还是同一秒的单号
+            MessageBox.Show(
+                "保存失败：单号重复，请稍候重试。",
+                "保存失败",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return false; // 窗口不关，用户可直接重试
+        }
+        catch (DbUpdateException ex)
+        {
+            // 其余数据库拒绝（意外情况）：给出原始原因，用户知道发生了什么再决定
+            MessageBox.Show(
+                $"保存失败：{ex.InnerException?.Message ?? ex.Message}",
+                "保存失败",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return false;
+        }
 
         return true;
     }

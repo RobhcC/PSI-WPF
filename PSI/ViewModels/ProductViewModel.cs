@@ -88,7 +88,20 @@ public class ProductViewModel : ViewModelBase
             var product = new Product();
             editVm.ApplyTo(product);
             db.Products.Add(product);
-            db.SaveChanges();
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                // 数据库拒绝写入（如名称超过 50 字上限）：提示原因，放弃本次保存
+                MessageBox.Show(
+                    $"保存失败：{ex.InnerException?.Message ?? ex.Message}",
+                    "保存失败",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
             LoadProducts();
         }
     }
@@ -110,7 +123,19 @@ public class ProductViewModel : ViewModelBase
             if (product != null)
             {
                 editVm.ApplyTo(product);
-                db.SaveChanges();
+                try
+                {
+                    db.SaveChanges();
+                }
+                catch (DbUpdateException ex)
+                {
+                    MessageBox.Show(
+                        $"保存失败：{ex.InnerException?.Message ?? ex.Message}",
+                        "保存失败",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
             }
             LoadProducts();
         }

@@ -74,7 +74,20 @@ public class SupplierViewModel : ViewModelBase
             var supplier = new Supplier();
             editVm.ApplyTo(supplier);
             db.Suppliers.Add(supplier);
-            db.SaveChanges();
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                // 数据库拒绝写入（如名称超过 50 字上限）：提示原因，放弃本次保存
+                MessageBox.Show(
+                    $"保存失败：{ex.InnerException?.Message ?? ex.Message}",
+                    "保存失败",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
             LoadSuppliers();
         }
     }
@@ -95,7 +108,19 @@ public class SupplierViewModel : ViewModelBase
             if (supplier != null)
             {
                 editVm.ApplyTo(supplier);
-                db.SaveChanges();
+                try
+                {
+                    db.SaveChanges();
+                }
+                catch (DbUpdateException ex)
+                {
+                    MessageBox.Show(
+                        $"保存失败：{ex.InnerException?.Message ?? ex.Message}",
+                        "保存失败",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
             }
             LoadSuppliers();
         }

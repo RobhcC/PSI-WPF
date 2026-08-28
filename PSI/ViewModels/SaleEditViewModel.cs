@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using PSI.Data;
 using PSI.MVVM;
 using PSI.Models;
@@ -223,7 +225,30 @@ public class SaleEditViewModel : ViewModelBase
         }
 
         db.SaleOrders.Add(order);
-        db.SaveChanges(); // 校验在前、扣减在后，全部变更一次原子提交
+        try
+        {
+            db.SaveChanges(); // 校验在前、扣减在后，全部变更一次原子提交
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
+        {
+            // 2601/2627 = 撞唯一索引，与采购单同理：实际触发场景是双击保存按钮
+            MessageBox.Show(
+                "保存失败：单号重复，请稍候重试。",
+                "保存失败",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return false; // 窗口不关，用户可直接重试
+        }
+        catch (DbUpdateException ex)
+        {
+            // 其余数据库拒绝（意外情况）：给出原始原因，用户知道发生了什么再决定
+            MessageBox.Show(
+                $"保存失败：{ex.InnerException?.Message ?? ex.Message}",
+                "保存失败",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return false;
+        }
 
         return true;
     }
