@@ -10,10 +10,8 @@ using PSI.Models;
 namespace PSI.ViewModels;
 
 /// <summary>
-/// 销售出库单编辑的 ViewModel。与采购对称，多两件事：
-/// ① 保存前校验库存余量（不足则拒绝保存）；
-/// ② 库存是"扣减"而不是"增加"。
-/// 同一商品出现多行时按商品汇总后统一校验，防止"每行都够、加起来不够"的漏判。
+/// 销售出库单编辑的 ViewModel，与采购对称；区别是保存前按商品汇总校验
+/// 库存余量防超卖，且库存为扣减。
 /// </summary>
 public class SaleEditViewModel : ViewModelBase
 {
@@ -153,7 +151,7 @@ public class SaleEditViewModel : ViewModelBase
 
         using var db = new AppDbContext();
 
-        // ---- 第一步：按商品汇总需求量（同一商品可能占多行）----
+        // 同一商品可能占多行，先按商品汇总需求量
         var needed = new Dictionary<int, int>();
         foreach (var row in Details)
         {
@@ -168,7 +166,7 @@ public class SaleEditViewModel : ViewModelBase
             }
         }
 
-        // ---- 第二步：逐一校验库存余量，任何一个不足就整单拒绝 ----
+        // 逐一校验库存余量，任何一个不足就整单拒绝
         var stocks = db.Stocks
             .Where(s => needed.Keys.Contains(s.ProductId))
             .ToList();
@@ -189,7 +187,7 @@ public class SaleEditViewModel : ViewModelBase
             }
         }
 
-        // ---- 第三步：校验全部通过，开始构建单据并扣减库存 ----
+        // 校验通过，构建单据并扣减库存
         var order = new SaleOrder
         {
             OrderNo = "XS" + DateTime.Now.ToString("yyyyMMddHHmmss"),
@@ -231,17 +229,16 @@ public class SaleEditViewModel : ViewModelBase
         }
         catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
         {
-            // 2601/2627 = 撞唯一索引，与采购单同理：实际触发场景是双击保存按钮
+            // 2601/2627 = 撞唯一索引，实际触发场景是双击保存按钮
             MessageBox.Show(
                 "保存失败：单号重复，请稍候重试。",
                 "保存失败",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
-            return false; // 窗口不关，用户可直接重试
+            return false;
         }
         catch (DbUpdateException ex)
         {
-            // 其余数据库拒绝（意外情况）：给出原始原因，用户知道发生了什么再决定
             MessageBox.Show(
                 $"保存失败：{ex.InnerException?.Message ?? ex.Message}",
                 "保存失败",

@@ -9,19 +9,15 @@ using PSI.Windows;
 namespace PSI.ViewModels;
 
 /// <summary>
-/// 商品列表页的 ViewModel：持商品列表、选中行、搜索词和四个操作命令。
-/// 数据操作模式：每次操作开一个短命的 DbContext（using 用完即释放），
-/// 桌面单机应用数据量小，这种"随用随开"最直白，也避免长连接带来的脏数据问题。
+/// 商品列表页的 ViewModel：商品列表、选中行、搜索词和增删改查命令。
 /// </summary>
 public class ProductViewModel : ViewModelBase
 {
-    /// <summary>商品列表。用 ObservableCollection 而不是 List：
-    /// 它在增删元素时会发通知，DataGrid 会自动跟着增删行；List 不会，界面会不刷新。</summary>
     public ObservableCollection<Product> Products { get; } = new();
 
     private Product? _selectedProduct;
 
-    /// <summary>表格当前选中行。编辑/删除命令靠它工作，CanExecute 也盯它。</summary>
+    /// <summary>表格当前选中行。</summary>
     public Product? SelectedProduct
     {
         get => _selectedProduct;
@@ -46,7 +42,7 @@ public class ProductViewModel : ViewModelBase
     {
         SearchCommand = new RelayCommand(_ => LoadProducts());
         AddCommand = new RelayCommand(_ => AddProduct());
-        // canExecute：没选中行时命令不可用，按钮自动变灰（CommandManager 定期重查）
+        // 未选中行时命令不可用，按钮自动变灰
         EditCommand = new RelayCommand(_ => EditProduct(), _ => SelectedProduct != null);
         DeleteCommand = new RelayCommand(_ => DeleteProduct(), _ => SelectedProduct != null);
 
@@ -73,8 +69,7 @@ public class ProductViewModel : ViewModelBase
 
     private void AddProduct()
     {
-        // 弹编辑窗（空表单）。这里 VM 直接 new 窗口，不是纯 MVVM（理论上该有对话框服务），
-        // 但单机小项目引一层抽象不值得——面试被问到就照实说这个取舍。
+        // VM 直接 new 弹窗而非对话框服务，单机小项目不值得多一层抽象
         var editVm = new ProductEditViewModel(null);
         var window = new ProductEditWindow
         {
@@ -94,7 +89,7 @@ public class ProductViewModel : ViewModelBase
             }
             catch (DbUpdateException ex)
             {
-                // 数据库拒绝写入（如名称超过 50 字上限）：提示原因，放弃本次保存
+                // 数据库拒绝写入（如名称超长）：提示原因，放弃本次保存
                 MessageBox.Show(
                     $"保存失败：{ex.InnerException?.Message ?? ex.Message}",
                     "保存失败",
@@ -168,7 +163,7 @@ public class ProductViewModel : ViewModelBase
         }
         catch (DbUpdateException)
         {
-            // 商品被采购/销售明细引用时，数据库的 Restrict 约束会拒绝删除并抛这个异常
+            // 商品被单据引用时，数据库的 Restrict 约束会拒绝删除并抛异常
             MessageBox.Show(
                 "该商品已被单据引用，不能删除。",
                 "无法删除",

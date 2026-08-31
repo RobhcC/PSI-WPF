@@ -5,9 +5,8 @@ using PSI.Models;
 namespace PSI.ViewModels;
 
 /// <summary>
-/// 商品编辑弹窗的 ViewModel。
-/// 弹窗里编辑的是"草稿"属性（Name/Category/...），点确定才通过 ApplyTo 写回实体——
-/// 这样点取消什么都不发生，不存在"改了一半留在界面上"的脏数据。
+/// 商品编辑弹窗的 ViewModel。编辑的是草稿属性，确定时经 ApplyTo 写回实体，
+/// 取消则不落库。
 /// </summary>
 public class ProductEditViewModel : ViewModelBase
 {

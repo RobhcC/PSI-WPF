@@ -6,15 +6,12 @@ using PSI.Models;
 namespace PSI.ViewModels;
 
 /// <summary>
-/// 单据明细只读查看的 ViewModel。采购单和销售单共用一套：
-/// 展示形状完全相同（单头信息 + 商品/数量/单价/金额的明细行），
-/// 只读无编辑逻辑，分开写两套纯属重复。构造时用新的 DbContext
-/// 按 Id 重查明细（列表页传进来的 order 来自已释放的 context，
-/// 只读它的标量值不碰导航属性，不会引发跟踪冲突）。
+/// 单据明细只读查看的 ViewModel，采购/销售共用。
+/// 构造时按 Id 用新 DbContext 重查明细，不碰列表页传来的旧对象导航属性。
 /// </summary>
 public class OrderDetailViewModel
 {
-    /// <summary>明细表格的一行：商品名 + 数量 + 单价 + 金额，纯展示。</summary>
+    /// <summary>明细表格的一行。</summary>
     public class Row
     {
         public string ProductName { get; init; } = "";
@@ -29,10 +26,10 @@ public class OrderDetailViewModel
     /// <summary>窗口标题：区分采购/销售。</summary>
     public string Title { get; }
 
-    /// <summary>往来单位的字段名："供应商"或"客户"（界面标签跟着变）。</summary>
+    /// <summary>往来单位字段名："供应商"或"客户"。</summary>
     public string PartnerLabel { get; }
 
-    /// <summary>往来单位名称（供应商名或客户名）。</summary>
+    /// <summary>往来单位名称。</summary>
     public string PartnerName { get; }
 
     public string OrderNo { get; }
@@ -75,8 +72,7 @@ public class OrderDetailViewModel
         }
     }
 
-    /// <summary>公共字段初始化，两个业务构造函数共用。partnerName 由列表页的
-    /// Include(o => o.Supplier/Customer) 预加载好了，直接读导航属性即可。</summary>
+    /// <summary>公共字段初始化，两个业务构造函数共用。</summary>
     private OrderDetailViewModel(string title, string partnerLabel, string partnerName, string orderNo, DateTime orderDate, decimal totalAmount)
     {
         Title = title;

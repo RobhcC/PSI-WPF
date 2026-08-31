@@ -1,8 +1,7 @@
 namespace PSI.Models;
 
 /// <summary>
-/// 供应商。纯数据类，对应数据库 Suppliers 表。
-/// 采购入库单引用它（从谁那里买的）。
+/// 供应商，采购入库单引用。
 /// </summary>
 public class Supplier
 {
@@ -10,7 +9,6 @@ public class Supplier
 
     public string Name { get; set; } = "";
 
-    /// <summary>联系人。</summary>
     public string ContactPerson { get; set; } = "";
 
     public string Phone { get; set; } = "";

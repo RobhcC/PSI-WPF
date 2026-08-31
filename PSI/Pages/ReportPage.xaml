@@ -10,7 +10,7 @@
                           SelectedItem="{Binding SelectedYear}" Width="100"/>
                 <Button Content="查询" Command="{Binding QueryCommand}" Width="60" Margin="8,0,0,0"/>
             </StackPanel>
-            <!-- 第二行：全年合计。指标多了一行放不下，拆两行直白 -->
+            <!-- 第二行：全年合计 -->
             <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
                 <TextBlock Text="全年采购合计：" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding TotalPurchase, StringFormat={}{0:N2} 元}" FontWeight="Bold" VerticalAlignment="Center"/>

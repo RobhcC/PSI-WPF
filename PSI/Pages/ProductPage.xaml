@@ -12,7 +12,7 @@
             <Button Content="删除" Command="{Binding DeleteCommand}" Width="60" Margin="8,0,0,0"/>
         </StackPanel>
 
-        <!-- 商品表格。IsReadOnly：表格只展示，修改走编辑弹窗（防止误改） -->
+        <!-- 商品表格，只读展示，修改走编辑弹窗 -->
         <DataGrid ItemsSource="{Binding Products}"
                   SelectedItem="{Binding SelectedProduct}"
                   AutoGenerateColumns="False"

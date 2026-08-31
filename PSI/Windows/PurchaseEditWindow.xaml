@@ -38,8 +38,7 @@
                 <DataGridTemplateColumn Header="商品" Width="220">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <!-- 商品列表来自窗口 DataContext（PurchaseEditViewModel），
-                                 行内 ComboBox 需要越过行上下文去拿，所以用 RelativeSource 找到窗口 -->
+                            <!-- 商品数据源在窗口级 DataContext，行内用 RelativeSource 找回窗口 -->
                             <ComboBox ItemsSource="{Binding DataContext.Products, RelativeSource={RelativeSource AncestorType=Window}}"
                                       SelectedItem="{Binding SelectedProduct, UpdateSourceTrigger=PropertyChanged}"
                                       DisplayMemberPath="Name" Margin="4,2"/>

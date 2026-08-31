@@ -4,18 +4,15 @@ using PSI.Models;
 namespace PSI.Data;
 
 /// <summary>
-/// 数据库入口：EF Core 靠它知道"有哪些表、表怎么映射、外键怎么连"。
-/// WinForm 对照：以前你用 SqlConnection + SqlAdapter 手写 SQL；
-/// DbContext 把"写 SQL、开连接、读数据填对象"全包了，我们只操作 C# 对象。
+/// EF Core 数据库上下文：定义实体到表的映射、外键关系和种子数据。
 /// </summary>
 public class AppDbContext : DbContext
 {
-    /// <summary>连接字符串：LocalDB 实例 + 数据库名 PSI。
-    /// 集中放一处，以后换数据库（如完整 SQL Server）只改这一行。</summary>
+    /// <summary>LocalDB 连接串，集中一处方便后续更换数据库。</summary>
     public const string ConnectionString =
         @"Server=(localdb)\MSSQLLocalDB;Database=PSI;Trusted_Connection=True;";
 
-    // DbSet = 一张表。属性名 Products 会成为数据库里的表名（复数约定）
+    // 属性名即表名（复数约定）
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<Customer> Customers => Set<Customer>();
@@ -26,17 +23,15 @@ public class AppDbContext : DbContext
     public DbSet<Stock> Stocks => Set<Stock>();
     public DbSet<StockLog> StockLogs => Set<StockLog>();
 
-    /// <summary>告诉 EF 用哪个数据库。这里不用 appsettings.json 之类的配置文件：
-    /// 单机桌面应用一个固定连接串，直接常量最直白。</summary>
+    /// <summary>单机桌面应用，固定连接串，不走配置文件。</summary>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer(ConnectionString);
     }
 
     /// <summary>
-    /// 模型配置（Fluent API）：约定之外的规则都写在这里——
+    /// 模型配置（Fluent API）：约定之外的规则都在这里——
     /// 字段长度、精度、外键关系、删除行为、种子数据。
-    /// 写 C# 代码配置而不是贴 [Required] 特性在实体上，让实体保持纯数据类。
     /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,7 +41,7 @@ public class AppDbContext : DbContext
             e.Property(p => p.Name).IsRequired().HasMaxLength(50);
             e.Property(p => p.Category).HasMaxLength(20);
             e.Property(p => p.Unit).HasMaxLength(10);
-            // decimal 若不指定精度，SQL Server 默认只保留 2 位小数，先声明清楚免得精度被悄悄砍
+            // 默认精度只有 2 位小数，显式声明
             e.Property(p => p.PurchasePrice).HasPrecision(18, 2);
             e.Property(p => p.SalePrice).HasPrecision(18, 2);
         });
@@ -75,13 +70,13 @@ public class AppDbContext : DbContext
             e.HasIndex(o => o.OrderNo).IsUnique(); // 单据编号唯一，防止重复开单
             e.Property(o => o.TotalAmount).HasPrecision(18, 2);
 
-            // 供应商被单据引用后不许删，否则历史采购单会悬空 → Restrict
+            // 单据引用的供应商禁止删除，避免历史单据悬空
             e.HasOne(o => o.Supplier)
                 .WithMany()
                 .HasForeignKey(o => o.SupplierId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 外键：单据头删了，明细没有存在意义 → 级联删除
+            // 单据删除时明细级联删除
             e.HasMany(o => o.Details)
                 .WithOne(d => d.PurchaseOrder)
                 .HasForeignKey(d => d.PurchaseOrderId)
@@ -94,22 +89,21 @@ public class AppDbContext : DbContext
             e.Property(d => d.UnitPrice).HasPrecision(18, 2);
             e.Property(d => d.Amount).HasPrecision(18, 2);
 
-            // 外键：明细引用商品。商品被单据引用过就不许删 → Restrict（删除时数据库报错，
-            // 界面层据此提示"该商品已被单据使用"，避免删了商品导致历史单据数据悬空）
+            // 商品被单据引用后禁止删除
             e.HasOne(d => d.Product)
                 .WithMany()
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // ---------- 销售单（主）/ 销售明细（从）：与采购完全对称 ----------
+        // ---------- 销售单（主）/ 销售明细（从）：与采购对称 ----------
         modelBuilder.Entity<SaleOrder>(e =>
         {
             e.Property(o => o.OrderNo).IsRequired().HasMaxLength(20);
             e.HasIndex(o => o.OrderNo).IsUnique();
             e.Property(o => o.TotalAmount).HasPrecision(18, 2);
 
-            // 客户被单据引用后不许删，与供应商同理 → Restrict
+            // 客户被单据引用后禁止删除，与供应商同理
             e.HasOne(o => o.Customer)
                 .WithMany()
                 .HasForeignKey(o => o.CustomerId)
@@ -135,7 +129,7 @@ public class AppDbContext : DbContext
         // ---------- 库存 ----------
         modelBuilder.Entity<Stock>(e =>
         {
-            // 一个商品只允许一行库存：ProductId 唯一索引，防止出现两行互不知晓的库存记录
+            // 每个商品只允许一行库存
             e.HasIndex(s => s.ProductId).IsUnique();
 
             e.HasOne(s => s.Product)
@@ -144,7 +138,7 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // ---------- 库存流水（快照式审计记录，只增不改） ----------
+        // ---------- 库存流水（只增不改的审计记录） ----------
         modelBuilder.Entity<StockLog>(e =>
         {
             e.Property(l => l.ChangeType).IsRequired().HasMaxLength(20);
@@ -157,11 +151,8 @@ public class AppDbContext : DbContext
         });
 
         // ---------- 种子数据 ----------
-        // HasData 的数据会进迁移脚本：任何机器上执行 dotnet ef database update，
-        // 库建好后自动带这批数据，开箱能演示。主键必须显式指定（固定值）。
-        // 除了基础档案，还预置了采购/销售单、库存与流水——单据、库存、流水三者的
-        // 数量关系严格按真实开单逻辑造（库存=采购合计-销售合计，流水每单每商品一行），
-        // 保证库存查询和月度统计页一打开就是一套账实一致、能对上账的演示数据。
+        // 随迁移写入，建库即有演示数据；单据、库存、流水按真实开单逻辑造：
+        // 库存 = 采购合计 - 销售合计，流水与单据一一对应，账实一致。
         modelBuilder.Entity<Product>().HasData(
             new Product { Id = 1, Name = "PLC 模块 CPU1214C", Category = "控制器", Unit = "台", PurchasePrice = 1500, SalePrice = 1850 },
             new Product { Id = 2, Name = "触摸屏 TP700", Category = "人机界面", Unit = "台", PurchasePrice = 2200, SalePrice = 2680 },
@@ -196,8 +187,7 @@ public class AppDbContext : DbContext
             new Customer { Id = 5, Name = "青岛海纳重工装备", ContactPerson = "郑工", Phone = "12855552222", Address = "青岛市黄岛区XX路77号" },
             new Customer { Id = 6, Name = "成都锦程自动化集成", ContactPerson = "何工", Phone = "12766663333", Address = "成都市高新区XX路32号" });
 
-        // ---------- 演示单据：采购 5 张、销售 5 张，日期摊在 2026 年 4~8 月，月度统计页有数据可看。
-        // 单号沿用程序生成的 CG/XS + 时间戳格式；金额=明细行之和，与保存时的计算口径一致 ----------
+        // ---------- 演示单据：采购/销售各 5 张，金额 = 明细行之和 ----------
         modelBuilder.Entity<PurchaseOrder>().HasData(
             new PurchaseOrder { Id = 1, OrderNo = "CG20260408093000", SupplierId = 3, OrderDate = new DateTime(2026, 4, 8, 9, 30, 0), TotalAmount = 36360, CreatedAt = new DateTime(2026, 4, 8, 9, 30, 0) },
             new PurchaseOrder { Id = 2, OrderNo = "CG20260512090000", SupplierId = 1, OrderDate = new DateTime(2026, 5, 12, 9, 0, 0), TotalAmount = 16650, CreatedAt = new DateTime(2026, 5, 12, 9, 0, 0) },
@@ -258,7 +248,7 @@ public class AppDbContext : DbContext
             new SaleOrderDetail { Id = 14, SaleOrderId = 5, ProductId = 11, Quantity = 30, UnitPrice = 48, Amount = 1440 },
             new SaleOrderDetail { Id = 15, SaleOrderId = 5, ProductId = 15, Quantity = 30, UnitPrice = 105, Amount = 3150 });
 
-        // ---------- 库存结存：每个商品的采购合计 - 销售合计，与真实开单维护出的结果一致 ----------
+        // ---------- 库存结存：与单据推导结果一致 ----------
         modelBuilder.Entity<Stock>().HasData(
             new Stock { Id = 1, ProductId = 1, Quantity = 11 },
             new Stock { Id = 2, ProductId = 2, Quantity = 3 },
@@ -277,7 +267,7 @@ public class AppDbContext : DbContext
             new Stock { Id = 15, ProductId = 15, Quantity = 30 },
             new Stock { Id = 16, ProductId = 16, Quantity = 40 });
 
-        // ---------- 库存流水：与保存逻辑一致，每张单的每个商品一行，只增不改 ----------
+        // ---------- 库存流水：每张单的每个商品一行 ----------
         modelBuilder.Entity<StockLog>().HasData(
             // 采购入库 17 行（对应上面 5 张采购单）
             new StockLog { Id = 1, ProductId = 1, ChangeType = "采购入库", Quantity = 10, OrderNo = "CG20260408093000", CreatedAt = new DateTime(2026, 4, 8, 9, 30, 0) },

@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <!-- 菜单按钮的公共样式：定义一次，下面 8 个按钮通过 Style 复用（类似网页里的 CSS 类） -->
+        <!-- 菜单按钮公共样式 -->
         <Style x:Key="MenuButton" TargetType="Button">
             <Setter Property="Margin" Value="8,4"/>
             <Setter Property="Padding" Value="10,8"/>
@@ -17,15 +17,13 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Style.Triggers>
-                <!-- 鼠标悬停时给个背景色反馈，不然用户不知道点的是哪 -->
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#D6E4F0"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <!-- DataTemplate：告诉 WPF"这种 ViewModel 用哪个页面显示"。
-             ContentControl 的内容换成哪个 VM，WPF 就按这里的映射自动创建对应页面 -->
+        <!-- ViewModel → 页面的映射 -->
         <DataTemplate DataType="{x:Type vm:HomeViewModel}">
             <pages:HomePage/>
         </DataTemplate>
@@ -53,13 +51,12 @@
     </Window.Resources>
 
     <Grid>
-        <!-- 两列布局：左列固定 180 像素宽放菜单，右列 * 号表示占满剩余全部宽度 -->
+        <!-- 两列布局：左侧菜单，右侧内容区 -->
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="180"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- 左侧菜单区。注意：按钮不再写 Click 事件，改成绑定 ViewModel 里的命令 -->
         <StackPanel Grid.Column="0" Background="#F2F2F2">
             <TextBlock Text="PSI 进销存" FontSize="18" FontWeight="Bold"
                        Foreground="#333333" Margin="14,18,0,14"/>
@@ -73,9 +70,6 @@
             <Button Content="月度统计" Style="{StaticResource MenuButton}" Command="{Binding ReportCommand}"/>
         </StackPanel>
 
-        <!-- 右侧内容区：ContentControl 只负责显示绑定给它的 ViewModel，
-             具体用哪个页面渲染由上面的 DataTemplate 决定。
-             旧版 Frame 自带导航状态，和 MVVM 的"状态归 VM 管"相冲，故弃用 -->
         <ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}"/>
     </Grid>
 </Window>

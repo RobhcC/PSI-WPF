@@ -7,17 +7,12 @@ using PSI.MVVM;
 namespace PSI.ViewModels;
 
 /// <summary>
-/// 首页 ViewModel：打开程序第一眼的"经营概况板"。
-/// 六张概览卡片（档案数、库存占用资金、今年单据与销售额）+ 两张迷你榜
-/// （低库存预警、畅销商品）。全部用 Count/Sum/GroupBy 在数据库端一次算完，
-/// 首页不做定时刷新——单据页才是干活的地方，首页只给概况。
-/// 加载走后台线程：冷启动时 LocalDB 拉起进程 + EF 编译首个查询实测超过 1 秒，
-/// 若在构造函数里同步查，主窗口要自白等这一秒才显示；改异步后窗口先出来，
-/// 卡片数据到了再填（短暂显示 0 属正常）。
+/// 首页 ViewModel：经营概况卡片 + 低库存预警 + 畅销榜，统计在数据库端聚合。
+/// 加载在后台线程执行，窗口先显示，数据到位后填充。
 /// </summary>
 public class HomeViewModel : ViewModelBase
 {
-    /// <summary>低库存榜的一行：商品名 + 当前结存。</summary>
+    /// <summary>低库存榜的一行。</summary>
     public class LowStockRow
     {
         public string ProductName { get; init; } = "";
@@ -25,7 +20,7 @@ public class HomeViewModel : ViewModelBase
         public int Quantity { get; init; }
     }
 
-    /// <summary>畅销榜的一行：商品名 + 销售数量 + 销售金额。</summary>
+    /// <summary>畅销榜的一行。</summary>
     public class HotProductRow
     {
         public string ProductName { get; init; } = "";
@@ -77,14 +72,14 @@ public class HomeViewModel : ViewModelBase
         private set => SetProperty(ref _saleAmount, value);
     }
 
-    /// <summary>低库存 TOP 5（结存最少的前五，演示数据里天然有"快卖光"的商品）。</summary>
+    /// <summary>低库存 TOP 5。</summary>
     public ObservableCollection<LowStockRow> LowStockItems { get; } = new();
 
-    /// <summary>畅销商品 TOP 5（按销售金额，与月度统计页口径一致）。</summary>
+    /// <summary>畅销商品 TOP 5。</summary>
     public ObservableCollection<HotProductRow> HotProducts { get; } = new();
 
     private int _statYear;
-    /// <summary>当前年份，卡片文案显示"今年"用。</summary>
+    /// <summary>当前统计年份。</summary>
     public int StatYear
     {
         get => _statYear;
@@ -99,12 +94,11 @@ public class HomeViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// 后台线程一次算完所有指标。DbContext 不是线程安全的：全部查询关在 Task.Run 里
-    /// 用局部 db；await 之后回到 UI 线程再赋值属性/填充集合（绑定只认 UI 线程的修改）。
+    /// 后台线程一次算完所有指标，回 UI 线程后赋值属性、填充集合。
     /// </summary>
     private async Task LoadAsync()
     {
-        var year = StatYear; // 先在 UI 线程取值再进后台，避免后台读绑定属性
+        var year = StatYear;
 
         try
         {
@@ -117,8 +111,7 @@ public class HomeViewModel : ViewModelBase
                 var supplierCount = db.Suppliers.Count();
                 var customerCount = db.Customers.Count();
 
-                // 库存占用资金 = Σ(结存数量 × 商品采购价)：库存联商品表，数据库端一次聚合算完。
-                // 用采购价是保守口径（还没卖掉的都是成本投入），销售口径要按售价另算
+                // 库存占用资金 = Σ(结存数量 × 商品采购价)，按成本口径
                 var stockValue = db.Stocks.Sum(s => s.Quantity * s.Product.PurchasePrice);
 
                 var purchaseOrderCount = db.PurchaseOrders.Count(o => o.OrderDate.Year == year);
@@ -126,7 +119,7 @@ public class HomeViewModel : ViewModelBase
                     .Where(o => o.OrderDate.Year == year)
                     .Sum(o => o.TotalAmount);
 
-                // 低库存预警：结存升序取 5 条，提示"该补货了"
+                // 低库存预警 TOP 5
                 var low = db.Stocks
                     .Include(s => s.Product)
                     .OrderBy(s => s.Quantity)
@@ -134,7 +127,7 @@ public class HomeViewModel : ViewModelBase
                     .Select(s => new LowStockRow { ProductName = s.Product.Name, Quantity = s.Quantity })
                     .ToList();
 
-                // 畅销榜：按销售金额 GroupBy 取前五，与报表页同一个写法（数据库端 GROUP BY + TOP）
+                // 畅销榜 TOP 5，按销售金额
                 var hot = db.SaleOrderDetails
                     .Where(d => d.SaleOrder.OrderDate.Year == year)
                     .GroupBy(d => new { d.ProductId, d.Product.Name })

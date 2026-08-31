@@ -10,8 +10,8 @@
             <Button Content="查看明细" Command="{Binding ViewCommand}" Width="80" Margin="8,0,0,0"/>
         </StackPanel>
 
-        <!-- 供应商列绑定嵌套属性 Supplier.Name：靠查询时的 Include(o => o.Supplier) 联表带出 -->
-        <!-- 双击行也可查看明细：DataGrid 双击绑命令需要行为库，手写 MVVM 用 code-behind 事件转调 VM 命令 -->
+        <!-- 供应商列绑定嵌套属性 Supplier.Name -->
+        <!-- 双击行也可查看明细 -->
         <DataGrid ItemsSource="{Binding Orders}"
                   SelectedItem="{Binding SelectedOrder}"
                   MouseDoubleClick="DataGrid_MouseDoubleClick"

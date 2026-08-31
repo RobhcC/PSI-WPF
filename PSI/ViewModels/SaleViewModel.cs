@@ -8,7 +8,7 @@ using PSI.Windows;
 
 namespace PSI.ViewModels;
 
-/// <summary>销售单列表页的 ViewModel。与采购单列表同构，同样不提供删除（保护账实一致）。</summary>
+/// <summary>销售单列表页的 ViewModel，结构与采购列表对称，同样不提供删除。</summary>
 public class SaleViewModel : ViewModelBase
 {
     public ObservableCollection<SaleOrder> Orders { get; } = new();

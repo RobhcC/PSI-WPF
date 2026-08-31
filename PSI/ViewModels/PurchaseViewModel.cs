@@ -9,10 +9,7 @@ using PSI.Windows;
 namespace PSI.ViewModels;
 
 /// <summary>
-/// 采购单列表页的 ViewModel。
-/// 刻意不提供删除：单据保存时已联动库存，直接删单会造成账实不符。
-/// 真实 ERP 的做法是"红字冲销"（开一张负数单抵消），本项目规模下选择禁止删除，
-/// 数据完整性优先——这也是一个面试可讲的设计取舍。
+/// 采购单列表页的 ViewModel。单据保存时已联动库存，不提供删除，避免账实不符。
 /// </summary>
 public class PurchaseViewModel : ViewModelBase
 {

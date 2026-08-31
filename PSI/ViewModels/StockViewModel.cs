@@ -8,11 +8,8 @@ using PSI.Models;
 namespace PSI.ViewModels;
 
 /// <summary>
-/// 库存查询页的 ViewModel。上下两个视图（主从）：
-/// 上面是全部商品的库存结存，点选某一行，下面显示该商品的变动流水。
-/// Include 预加载导航属性：一次查询把 Product 联表带出来，绑定 Product.Name 才有值。
-/// 查询全部走后台线程：EF 首次编译查询 + LocalDB 启动都要几百毫秒到一秒多，
-/// 若在 UI 线程同步查，点菜单的瞬间整个界面会冻住（卡顿的根源）。
+/// 库存查询页的 ViewModel：上表库存结存，选中一行下方显示该商品变动流水。
+/// 查询在后台线程执行，避免卡住界面。
 /// </summary>
 public class StockViewModel : ViewModelBase
 {
@@ -22,7 +19,7 @@ public class StockViewModel : ViewModelBase
 
     private Stock? _selectedStock;
 
-    /// <summary>当前选中的库存行。一变就重查该商品的流水（主从联动）。</summary>
+    /// <summary>当前选中的库存行，变化时重查该商品流水。</summary>
     public Stock? SelectedStock
     {
         get => _selectedStock;
@@ -44,8 +41,8 @@ public class StockViewModel : ViewModelBase
 
     public RelayCommand SearchCommand { get; }
 
-    /// <summary>过期结果保护：每次发起新加载就自增。只有最新一次的结果才允许写回界面，
-    /// 防止"快速换行选中"时先发的旧查询后到，把新流水覆盖成旧数据。</summary>
+    /// <summary>过期结果保护：只允许最新一次加载的结果写回界面，
+    /// 防止连续操作时旧查询后到覆盖新数据。</summary>
     private int _stockVersion;
     private int _logVersion;
 
@@ -57,13 +54,12 @@ public class StockViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// 异步加载库存列表。DbContext 不是线程安全的：查询和 Dispose 全部关在 Task.Run 里，
-    /// 用自己的局部 db，不跨线程共享；await 之后回到 UI 线程，才能动 ObservableCollection
-    /// （绑定它的 DataGrid 只认 UI 线程的修改）。
+    /// 异步加载库存列表。查询关在 Task.Run 里用局部 DbContext（非线程安全），
+    /// await 后回到 UI 线程才能更新绑定集合。
     /// </summary>
     private async Task LoadStocksAsync()
     {
-        var keyword = SearchText; // 先在 UI 线程取值再进后台，避免后台读绑定属性
+        var keyword = SearchText;
         var version = ++_stockVersion;
 
         try
@@ -101,7 +97,7 @@ public class StockViewModel : ViewModelBase
         }
     }
 
-    /// <summary>加载选中商品的变动流水，按时间倒序（最近的在最上面）。同样走后台线程。</summary>
+    /// <summary>加载选中商品的变动流水，按时间倒序。</summary>
     private async Task LoadLogsAsync()
     {
         Logs.Clear();

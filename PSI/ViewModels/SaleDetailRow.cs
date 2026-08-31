@@ -15,7 +15,6 @@ public class SaleDetailRow : ObservableObject
         {
             if (SetProperty(ref _selectedProduct, value) && value != null)
             {
-                // 销售默认带售价（采购行带的是采购价——同一套结构，不同的默认值来源）
                 UnitPrice = value.SalePrice;
             }
         }

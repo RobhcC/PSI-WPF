@@ -5,10 +5,8 @@ using PSI.MVVM;
 namespace PSI.ViewModels;
 
 /// <summary>
-/// 月度统计页的 ViewModel：按年查询，给出 12 个月的采购/销售汇总
-/// （单据数 + 金额合计 + 销售毛利估算）、畅销商品 TOP 5 和全年合计。
-/// GroupBy 在数据库端执行（翻译成 SQL 的 GROUP BY），不是把全年数据拉到内存再算——
-/// 数据量小的时候看不出差别，但写法本身是对的。
+/// 月度统计页的 ViewModel：按年查询 12 个月的采购/销售汇总、畅销 TOP 5 和全年合计。
+/// 聚合全部在数据库端执行（GROUP BY），不把全年明细拉回内存。
 /// </summary>
 public class ReportViewModel : ViewModelBase
 {
@@ -106,17 +104,14 @@ public class ReportViewModel : ViewModelBase
             .Select(g => new { Month = g.Key, Count = g.Count(), Amount = g.Sum(x => x.TotalAmount) })
             .ToDictionary(x => x.Month);
 
-        // 毛利估算：从销售明细联商品表，(成交单价 - 商品采购价) × 数量，按月合计。
-        // 成本取商品档案的当前采购价，是估算口径——真实成本核算要按批次加权平均，
-        // 那是完整 ERP 的功能，这里给个够用的管理视角
+        // 毛利估算：(成交单价 - 商品当前采购价) × 数量，按月合计
         var profitByMonth = db.SaleOrderDetails
             .Where(d => d.SaleOrder.OrderDate.Year == SelectedYear)
             .GroupBy(d => d.SaleOrder.OrderDate.Month)
             .Select(g => new { Month = g.Key, Profit = g.Sum(x => (x.UnitPrice - x.Product.PurchasePrice) * x.Quantity) })
             .ToDictionary(x => x.Month);
 
-        // 固定显示 1~12 月：GroupBy 只返回有单据的月份，没数据的月份补 0，
-        // 报表一眼看全年，不用脑补缺了哪几个月
+        // 固定显示 1~12 月，没数据的月份补 0
         PurchaseRows.Clear();
         SaleRows.Clear();
         for (int month = 1; month <= 12; month++)
@@ -133,8 +128,7 @@ public class ReportViewModel : ViewModelBase
         TotalSale = SaleRows.Sum(r => r.Amount);
         TotalProfit = SaleRows.Sum(r => r.Profit);
 
-        // 畅销商品 TOP 5：按销售金额取前五，GroupBy + Take(5) 同样在数据库端完成
-        // （翻译成 GROUP BY + TOP(5)），不把全年明细拉回内存排序
+        // 畅销商品 TOP 5，数据库端 GROUP BY + TOP(5)
         TopProducts.Clear();
         var top = db.SaleOrderDetails
             .Where(d => d.SaleOrder.OrderDate.Year == SelectedYear)
